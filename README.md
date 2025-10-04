@@ -67,3 +67,8 @@ docker compose run --rm php composer qa
 - [Extra strict and opinionated rules for PHPStan](https://github.com/phpstan/phpstan-strict-rules)
 - [PHP Coding Standards Fixer](https://cs.symfony.com/doc/config.html)
 - [Setup PHP in GitHub Actions](https://github.com/shivammathur/setup-php)
+- [A type-safe, automatically-sorted linked list data structure for PHP](https://github.com/uniacid/sortedlinkedlist)
+- [A PHP library providing a sorted linked list for int or string values](https://github.com/davidvarney/SortedLinkedList)
+- [Ignoring Errors](https://phpstan.org/user-guide/ignoring-errors)
+- [Difference between gettype() and get_debug_type() in PHP8.1?](https://stackoverflow.com/questions/71508548/difference-between-gettype-and-get-debug-type-in-php8-1)
+- [Passing null to non-nullable internal function parameters is deprecated](https://php.watch/versions/8.1/internal-func-non-nullable-null-deprecation)
