@@ -1,0 +1,37 @@
+{
+  "name": "sif/sorted-linked-list",
+  "description": "Implementation for a library that provides SortedLinkedList",
+  "version": "1.0.0",
+  "type": "library",
+  "license": "MIT",
+  "authors": [{
+    "name": "Emrah Sifoglu"
+  }],
+  "require": {
+      "php": "^8.1"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10.5",
+    "phpstan/phpstan": "^1.10",
+    "phpstan/phpstan-strict-rules": "^1.5",
+    "friendsofphp/php-cs-fixer": "^3.64",
+    "infection/infection": "^0.27"
+  },
+  "autoload": {
+    "psr-4": {
+        "Sif\\SortedLinkedList\\": "src/"
+    }
+  },
+  "scripts": {
+    "test": "phpunit",
+    "phpstan": "phpstan analyse",
+    "cs-check": "php-cs-fixer fix --dry-run --allow-risky=yes",
+    "cs-fix": "php-cs-fixer fix --allow-risky=yes",
+    "qa": ["@test", "@phpstan", "@cs-check"]
+  },
+  "config": {
+    "allow-plugins": {
+      "infection/extension-installer": true
+    }
+  }
+}
