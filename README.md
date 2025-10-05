@@ -72,3 +72,4 @@ docker compose run --rm php composer qa
 - [Ignoring Errors](https://phpstan.org/user-guide/ignoring-errors)
 - [Difference between gettype() and get_debug_type() in PHP8.1?](https://stackoverflow.com/questions/71508548/difference-between-gettype-and-get-debug-type-in-php8-1)
 - [Passing null to non-nullable internal function parameters is deprecated](https://php.watch/versions/8.1/internal-func-non-nullable-null-deprecation)
+- [Remove duplicates from a sorted Linked List](https://www.youtube.com/watch?v=0nSjucAVsIU)

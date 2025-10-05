@@ -160,6 +160,74 @@ class SortedLinkedList
     }
 
     /**
+     * Deletes the first occurrence of a value from the list.
+     *
+     * Performs an optimized linear search that stops early when encountering
+     * a value greater than the target (taking advantage of sorted order).
+     * Only the first occurrence is deleted if duplicates exist.
+     *
+     * Time Complexity:
+     * - Best case: O(1) - element is at the head
+     * - Average case: O(n) - though early termination often reduces comparisons
+     * - Worst case: O(n) - element is at the tail or not in the list
+     *
+     * Space Complexity: O(1) - uses constant extra space
+     *
+     * @param T $value The value to delete
+     * @return bool True if the value is found and deleted, false otherwise
+     * @throws InvalidArgumentException When attempting to delete from an empty list
+     * @throws InvalidArgumentException if $value type doesn't match the list's expected type
+     */
+    public function delete(int|string $value): bool
+    {
+        if ($this->head === null) {
+            throw new InvalidArgumentException('Cannot delete in an empty list');
+        }
+
+        $deleteType = get_debug_type($value);
+        if ($deleteType !== $this->valueType) {
+            throw new InvalidArgumentException(
+                "Cannot delete {$deleteType} from list of {$this->valueType}"
+            );
+        }
+
+        $isString = $this->valueType === 'string';
+
+        $headValue = $this->head->getValue();
+        if (($isString && strcmp((string)$headValue, (string)$value) === 0) || (!$isString && $headValue === $value)) {
+            $this->head = $this->head->getNext();
+            $this->size--;
+            return true;
+        }
+
+        $current = $this->head;
+        while ($current->getNext() !== null) {
+            $nextValue = $current->getNext()->getValue();
+            $isNextGreater = $isString
+                ? strcmp((string)$nextValue, (string)$value) > 0
+                : $nextValue > $value;
+
+            if ($isNextGreater) {
+                return false;
+            }
+
+            $isNextEqual = $isString
+                ? strcmp((string)$nextValue, (string)$value) === 0
+                : $nextValue === $value;
+
+            if ($isNextEqual) {
+                $current->setNext($current->getNext()->getNext());
+                $this->size--;
+                return true;
+            }
+
+            $current = $current->getNext();
+        }
+
+        return false;
+    }
+
+    /**
      * Returns the head node of the list.
      *
      * @return Node<T>|null The first node, or null if the list is empty
