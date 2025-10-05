@@ -105,6 +105,61 @@ class SortedLinkedList
     }
 
     /**
+     * Searches for a value in the list (optimized version).
+     *
+     * Performs an optimized linear search that stops early when encountering
+     * a value greater than the search target (taking advantage of sorted order).
+     *
+     * Time Complexity:
+     * - Best case: O(1) - element is at the head
+     * - Average case: O(n) - though early termination often reduces comparisons
+     * - Worst case: O(n) - element is at the tail or not in the list
+     *
+     * Space Complexity: O(1) - uses constant extra space
+     *
+     * @param T $value The value to search for
+     * @return bool True if the value is found, false otherwise
+     * @throws InvalidArgumentException When attempting to search in empty list
+     * @throws InvalidArgumentException if $value type doesn't match the list's expected type
+     */
+    public function search(int|string $value): bool
+    {
+        if ($this->head === null) {
+            throw new InvalidArgumentException('Cannot search in an empty list');
+        }
+
+        $searchType = get_debug_type($value);
+        if ($searchType !== $this->valueType) {
+            throw new InvalidArgumentException(
+                "Cannot search for {$searchType} in list of {$this->valueType}"
+            );
+        }
+
+        $isString = $this->valueType === 'string';
+        $current = $this->head;
+
+        while ($current !== null) {
+            $currentValue = $current->getValue();
+
+            if ($currentValue === $value) {
+                return true;
+            }
+
+            $isGreater = $isString
+                ? strcmp((string)$currentValue, (string)$value) > 0
+                : $currentValue > $value;
+
+            if ($isGreater) {
+                return false;
+            }
+
+            $current = $current->getNext();
+        }
+
+        return false;
+    }
+
+    /**
      * Returns the head node of the list.
      *
      * @return Node<T>|null The first node, or null if the list is empty
