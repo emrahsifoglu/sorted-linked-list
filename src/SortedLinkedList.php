@@ -303,6 +303,54 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
     }
 
     /**
+     * Creates a new SortedLinkedList instance from a given array.
+     *
+     * This static factory method validates type consistency, sorts the input array,
+     * and builds the linked list directly by connecting nodes sequentially. This
+     * approach is more efficient than using insert() for each element.
+     *
+     * Time Complexity:
+     * - Best case: O(n log n) - dominated by the sorting operation
+     * - Average case: O(n log n) - sorting + linear list construction
+     * - Worst case: O(n log n) - sorting is the limiting factor
+     *
+     * Space Complexity: O(n) - creates n nodes for the linked list
+     *
+     * Note: Using insert() for each element would result in O(n²) time complexity,
+     * as each insertion requires traversing the list to find the correct position.
+     *
+     * @param array<T> $values The array of values to populate the list with.
+     * @return self<T> A new SortedLinkedList instance.
+     * @throws InvalidArgumentException If the array contains elements of mixed types.
+     */
+    public static function fromArray(array $values): self
+    {
+        /** @var self<T> $list */
+        $list = new self();
+
+        if (count($values) === 0) {
+            return $list;
+        }
+
+        $firstType = get_debug_type($values[array_key_first($values)]);
+
+        foreach ($values as $value) {
+            $currentType = get_debug_type($value);
+            if ($currentType !== $firstType) {
+                throw new InvalidArgumentException(
+                    "Mixed types in array: expected {$firstType}, found {$currentType}"
+                );
+            }
+        }
+
+        foreach ($values as $value) {
+            $list->insert($value);
+        }
+
+        return $list;
+    }
+
+    /**
      * Resets the list, removing all elements and resetting the value type.
      *
      * This method effectively empties the list, making it ready to accept new
