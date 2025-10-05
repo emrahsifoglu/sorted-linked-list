@@ -1,0 +1,369 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Sif\SortedLinkedList;
+
+use InvalidArgumentException;
+
+/**
+ * A sorted linked list that maintains elements in ascending order.
+ *
+ * This data structure automatically maintains sort order upon insertion.
+ * All elements must be of the same type (homogeneous collection).
+ * Null values are not permitted.
+ * @template T of int|string
+ * @implements \IteratorAggregate<int, T>
+ */
+class SortedLinkedList implements \Countable, \IteratorAggregate
+{
+    /**
+     * The first node in the linked list.
+     *
+     * @var Node<T>|null
+     */
+    private ?Node $head = null;
+
+    /**
+     * The number of elements in the list.
+     *
+     * @var int
+     */
+    private int $size = 0;
+
+    /**
+     * The data type of elements stored in this list.
+     * Determined by the first inserted element.
+     *
+     * @var string|null
+     */
+    private ?string $valueType = null;
+
+    /**
+     * Retrieves an external iterator for the list.
+     *
+     * This implementation uses a **lazy generator** to traverse the linked list
+     * without creating intermediate arrays, allowing for efficient iteration
+     * even over large lists.
+     *
+     * Each iteration yields the node's value in ascending order.
+     *
+     * @return \Traversable<int, T>
+     */
+    public function getIterator(): \Traversable
+    {
+        $current = $this->head;
+        while ($current !== null) {
+            yield $current->getValue();
+            $current = $current->getNext();
+        }
+    }
+
+    /**
+     * Inserts a value into the list while maintaining sorted order.
+     *
+     * The value is inserted at the correct position to keep the list sorted
+     * in ascending order. All values must be of the same type as the first
+     * inserted value.
+     *
+     * @param T $value The value to insert (must not be null)
+     * @return self<T> Returns the list instance for method chaining
+     * @throws InvalidArgumentException If the value is null or of a different type than existing elements
+     */
+    public function insert(int|string $value): self
+    {
+        $actualType = get_debug_type($value);
+
+        if ($this->valueType === null) {
+            $this->valueType = $actualType;
+        } elseif ($actualType !== $this->valueType) {
+            throw new InvalidArgumentException(
+                "Cannot insert {$actualType} into list of {$this->valueType}"
+            );
+        }
+
+        $newNode = new Node($value);
+
+        if ($this->head === null) {
+            $this->head = $newNode;
+            $this->size++;
+
+            return $this;
+        }
+
+        $isString = $this->valueType === 'string';
+        $isLessThanOrEqual = $isString
+          ? strcmp((string)$value, (string)$this->head->getValue()) <= 0
+          : $value <= $this->head->getValue();
+
+        if ($isLessThanOrEqual) {
+            $newNode->setNext($this->head);
+            $this->head = $newNode;
+            $this->size++;
+
+            return $this;
+        }
+
+        $current = $this->head;
+        while ($current->getNext() !== null) {
+            $nextValue = $current->getNext()->getValue();
+            $isGreaterThanOrEqual = $isString
+              ? strcmp((string)$nextValue, (string)$value) >= 0
+              : $nextValue >= $value;
+
+            if ($isGreaterThanOrEqual) {
+                break;
+            }
+            $current = $current->getNext();
+        }
+
+        $newNode->setNext($current->getNext());
+        $current->setNext($newNode);
+        $this->size++;
+
+        return $this;
+    }
+
+    /**
+     * Searches for a value in the list (optimized version).
+     *
+     * Performs an optimized linear search that stops early when encountering
+     * a value greater than the search target (taking advantage of sorted order).
+     *
+     * Time Complexity:
+     * - Best case: O(1) - element is at the head
+     * - Average case: O(n) - though early termination often reduces comparisons
+     * - Worst case: O(n) - element is at the tail or not in the list
+     *
+     * Space Complexity: O(1) - uses constant extra space
+     *
+     * @param T $value The value to search for
+     * @return bool True if the value is found, false otherwise
+     * @throws InvalidArgumentException When attempting to search in empty list
+     * @throws InvalidArgumentException if $value type doesn't match the list's expected type
+     */
+    public function search(int|string $value): bool
+    {
+        if ($this->head === null) {
+            throw new InvalidArgumentException('Cannot search in an empty list');
+        }
+
+        $searchType = get_debug_type($value);
+        if ($searchType !== $this->valueType) {
+            throw new InvalidArgumentException(
+                "Cannot search for {$searchType} in list of {$this->valueType}"
+            );
+        }
+
+        $isString = $this->valueType === 'string';
+        $current = $this->head;
+
+        while ($current !== null) {
+            $currentValue = $current->getValue();
+
+            if ($currentValue === $value) {
+                return true;
+            }
+
+            $isGreater = $isString
+                ? strcmp((string)$currentValue, (string)$value) > 0
+                : $currentValue > $value;
+
+            if ($isGreater) {
+                return false;
+            }
+
+            $current = $current->getNext();
+        }
+
+        return false;
+    }
+
+    /**
+     * Deletes the first occurrence of a value from the list.
+     *
+     * Performs an optimized linear search that stops early when encountering
+     * a value greater than the target (taking advantage of sorted order).
+     * Only the first occurrence is deleted if duplicates exist.
+     *
+     * Time Complexity:
+     * - Best case: O(1) - element is at the head
+     * - Average case: O(n) - though early termination often reduces comparisons
+     * - Worst case: O(n) - element is at the tail or not in the list
+     *
+     * Space Complexity: O(1) - uses constant extra space
+     *
+     * @param T $value The value to delete
+     * @return bool True if the value is found and deleted, false otherwise
+     * @throws InvalidArgumentException When attempting to delete from an empty list
+     * @throws InvalidArgumentException if $value type doesn't match the list's expected type
+     */
+    public function delete(int|string $value): bool
+    {
+        if ($this->head === null) {
+            throw new InvalidArgumentException('Cannot delete in an empty list');
+        }
+
+        $deleteType = get_debug_type($value);
+        if ($deleteType !== $this->valueType) {
+            throw new InvalidArgumentException(
+                "Cannot delete {$deleteType} from list of {$this->valueType}"
+            );
+        }
+
+        $isString = $this->valueType === 'string';
+
+        $headValue = $this->head->getValue();
+        if (($isString && strcmp((string)$headValue, (string)$value) === 0) || (!$isString && $headValue === $value)) {
+            $this->head = $this->head->getNext();
+            $this->size--;
+            return true;
+        }
+
+        $current = $this->head;
+        while ($current->getNext() !== null) {
+            $nextValue = $current->getNext()->getValue();
+            $isNextGreater = $isString
+                ? strcmp((string)$nextValue, (string)$value) > 0
+                : $nextValue > $value;
+
+            if ($isNextGreater) {
+                return false;
+            }
+
+            $isNextEqual = $isString
+                ? strcmp((string)$nextValue, (string)$value) === 0
+                : $nextValue === $value;
+
+            if ($isNextEqual) {
+                $current->setNext($current->getNext()->getNext());
+                $this->size--;
+                return true;
+            }
+
+            $current = $current->getNext();
+        }
+
+        return false;
+    }
+
+    /**
+     * Returns the head node of the list.
+     *
+     * @return Node<T>|null The first node, or null if the list is empty
+     */
+    public function getHead(): ?Node
+    {
+        return $this->head;
+    }
+
+    /**
+     * Gets the current number of elements in the list.
+     *
+     * This method is part of the `Countable` interface.
+     * It is automatically called when `count($list)` is used.
+     *
+     * @return int The number of elements
+     */
+    public function count(): int
+    {
+        return $this->size;
+    }
+
+    /**
+     * Checks whether the list is empty.
+     *
+     * @return bool True if the list contains no elements, false otherwise
+     */
+    public function isEmpty(): bool
+    {
+        return $this->size === 0;
+    }
+
+    /**
+     * Converts the sorted linked list to a standard PHP array.
+     *
+     * This method is **not lazy** and will traverse the entire list to build a new
+     * array in memory. It is useful for using built-in array functions or for
+     * debugging purposes.
+     *
+     * @return array<T> A numerically indexed array containing all list elements in sorted order.
+     */
+    public function toArray(): array
+    {
+        $result = [];
+        $current = $this->head;
+
+        while ($current !== null) {
+            $result[] = $current->getValue();
+            $current = $current->getNext();
+        }
+
+        return $result;
+    }
+
+    /**
+     * Creates a new SortedLinkedList instance from a given array.
+     *
+     * This static factory method validates type consistency, sorts the input array,
+     * and builds the linked list directly by connecting nodes sequentially. This
+     * approach is more efficient than using insert() for each element.
+     *
+     * Time Complexity:
+     * - Best case: O(n log n) - dominated by the sorting operation
+     * - Average case: O(n log n) - sorting + linear list construction
+     * - Worst case: O(n log n) - sorting is the limiting factor
+     *
+     * Space Complexity: O(n) - creates n nodes for the linked list
+     *
+     * Note: Using insert() for each element would result in O(n²) time complexity,
+     * as each insertion requires traversing the list to find the correct position.
+     *
+     * @param array<T> $values The array of values to populate the list with.
+     * @return self<T> A new SortedLinkedList instance.
+     * @throws InvalidArgumentException If the array contains elements of mixed types.
+     */
+    public static function fromArray(array $values): self
+    {
+        /** @var self<T> $list */
+        $list = new self();
+
+        if (count($values) === 0) {
+            return $list;
+        }
+
+        $firstType = get_debug_type($values[array_key_first($values)]);
+
+        foreach ($values as $value) {
+            $currentType = get_debug_type($value);
+            if ($currentType !== $firstType) {
+                throw new InvalidArgumentException(
+                    "Mixed types in array: expected {$firstType}, found {$currentType}"
+                );
+            }
+        }
+
+        foreach ($values as $value) {
+            $list->insert($value);
+        }
+
+        return $list;
+    }
+
+    /**
+     * Resets the list, removing all elements and resetting the value type.
+     *
+     * This method effectively empties the list, making it ready to accept new
+     * elements of any type (int or string) as the first element.
+     *
+     * @return self<T> Returns the instance for method chaining.
+     */
+    public function clear(): self
+    {
+        $this->head = null;
+        $this->size = 0;
+        $this->valueType = null;
+
+        return $this;
+    }
+}
