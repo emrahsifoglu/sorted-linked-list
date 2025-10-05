@@ -40,7 +40,7 @@ class SortedLinkedListTest extends TestCase
         $list = new SortedLinkedList();
         $list->insert(5);
 
-        Assert::assertSame(1, $list->getSize());
+        Assert::assertSame(1, $list->count());
         Assert::assertFalse($list->isEmpty());
     }
 
@@ -49,7 +49,7 @@ class SortedLinkedListTest extends TestCase
         $list = new SortedLinkedList();
         $list->insert(1)->insert(2)->insert(3);
 
-        Assert::assertSame(3, $list->getSize());
+        Assert::assertSame(3, $list->count());
     }
 
     public function testInsertReverseOrder(): void
@@ -57,7 +57,7 @@ class SortedLinkedListTest extends TestCase
         $list = new SortedLinkedList();
         $list->insert(3)->insert(2)->insert(1);
 
-        Assert::assertSame(3, $list->getSize());
+        Assert::assertSame(3, $list->count());
     }
 
     public function testInsertWithDuplicates(): void
@@ -65,7 +65,7 @@ class SortedLinkedListTest extends TestCase
         $list = new SortedLinkedList();
         $list->insert(5)->insert(5)->insert(5);
 
-        Assert::assertSame(3, $list->getSize());
+        Assert::assertSame(3, $list->count());
     }
 
     public function testTypeConsistency(): void
@@ -83,7 +83,7 @@ class SortedLinkedListTest extends TestCase
         $list = new SortedLinkedList();
         $list->insert('string');
 
-        Assert::assertSame(1, $list->getSize());
+        Assert::assertSame(1, $list->count());
     }
 
     public function testInsertChaining(): void

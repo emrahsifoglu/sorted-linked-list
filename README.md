@@ -73,3 +73,5 @@ docker compose run --rm php composer qa
 - [Difference between gettype() and get_debug_type() in PHP8.1?](https://stackoverflow.com/questions/71508548/difference-between-gettype-and-get-debug-type-in-php8-1)
 - [Passing null to non-nullable internal function parameters is deprecated](https://php.watch/versions/8.1/internal-func-non-nullable-null-deprecation)
 - [Remove duplicates from a sorted Linked List](https://www.youtube.com/watch?v=0nSjucAVsIU)
+- [Solving PHPStan error “No value type specified in iterable type”](https://phpstan.org/blog/solving-phpstan-no-value-type-specified-in-iterable-type)
+- [PHP interfaces IteratorAggregate vs Iterator?](https://stackoverflow.com/questions/13624639/php-interfaces-iteratoraggregate-vs-iterator)

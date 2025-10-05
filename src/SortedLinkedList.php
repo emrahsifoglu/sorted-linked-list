@@ -12,10 +12,10 @@ use InvalidArgumentException;
  * This data structure automatically maintains sort order upon insertion.
  * All elements must be of the same type (homogeneous collection).
  * Null values are not permitted.
- *
  * @template T of int|string
+ * @implements \IteratorAggregate<int, T>
  */
-class SortedLinkedList
+class SortedLinkedList implements \Countable, \IteratorAggregate
 {
     /**
      * The first node in the linked list.
@@ -38,6 +38,26 @@ class SortedLinkedList
      * @var string|null
      */
     private ?string $valueType = null;
+
+    /**
+     * Retrieves an external iterator for the list.
+     *
+     * This implementation uses a **lazy generator** to traverse the linked list
+     * without creating intermediate arrays, allowing for efficient iteration
+     * even over large lists.
+     *
+     * Each iteration yields the node's value in ascending order.
+     *
+     * @return \Traversable<int, T>
+     */
+    public function getIterator(): \Traversable
+    {
+        $current = $this->head;
+        while ($current !== null) {
+            yield $current->getValue();
+            $current = $current->getNext();
+        }
+    }
 
     /**
      * Inserts a value into the list while maintaining sorted order.
@@ -240,9 +260,12 @@ class SortedLinkedList
     /**
      * Gets the current number of elements in the list.
      *
+     * This method is part of the `Countable` interface.
+     * It is automatically called when `count($list)` is used.
+     *
      * @return int The number of elements
      */
-    public function getSize(): int
+    public function count(): int
     {
         return $this->size;
     }

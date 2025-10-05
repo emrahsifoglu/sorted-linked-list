@@ -156,4 +156,68 @@ class SortedLinkedListInsertTest extends TestCase
         Assert::assertSame('cat', $firstNode->getValue());
         Assert::assertSame('dog', $secondNode->getValue());
     }
+
+    public function testInsertionMaintainsSortedOrderForStrings(): void
+    {
+        $list = new SortedLinkedList();
+        $list->insert('C')->insert('A')->insert('B')->insert('D');
+
+        $expected = ['A', 'B', 'C', 'D'];
+        $actual = [];
+
+        foreach ($list as $value) {
+            $actual[] = $value;
+        }
+
+        Assert::assertSame($expected, $actual);
+    }
+
+    public function testInsertingDuplicates(): void
+    {
+        $list = new SortedLinkedList();
+        $list->insert(5)->insert(10)->insert(5)->insert(10)->insert(3);
+
+        $expected = [3, 5, 5, 10, 10];
+        $actual = [];
+
+        foreach ($list as $value) {
+            $actual[] = $value;
+        }
+
+        Assert::assertSame($expected, $actual);
+        Assert::assertCount(5, $list);
+    }
+
+    public function testInsertionAtHeadAndTail(): void
+    {
+        $list = new SortedLinkedList();
+        $list->insert(50);
+        $list->insert(100);
+        $list->insert(1);
+
+        $expected = [1, 50, 100];
+        $actual = [];
+
+        foreach ($list as $value) {
+            $actual[] = $value;
+        }
+
+        Assert::assertSame($expected, $actual);
+    }
+
+    public function testInsertionMaintainsSortedOrderForIntegers(): void
+    {
+        $list = new SortedLinkedList();
+        $list->insert(10)->insert(5)->insert(20)->insert(15);
+
+        $expected = [5, 10, 15, 20];
+        $actual = [];
+
+        foreach ($list as $value) {
+            $actual[] = $value;
+        }
+
+        Assert::assertSame($expected, $actual);
+        Assert::assertCount(4, $list);
+    }
 }
