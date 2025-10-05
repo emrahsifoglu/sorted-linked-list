@@ -279,4 +279,43 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
     {
         return $this->size === 0;
     }
+
+    /**
+     * Converts the sorted linked list to a standard PHP array.
+     *
+     * This method is **not lazy** and will traverse the entire list to build a new
+     * array in memory. It is useful for using built-in array functions or for
+     * debugging purposes.
+     *
+     * @return array<T> A numerically indexed array containing all list elements in sorted order.
+     */
+    public function toArray(): array
+    {
+        $result = [];
+        $current = $this->head;
+
+        while ($current !== null) {
+            $result[] = $current->getValue();
+            $current = $current->getNext();
+        }
+
+        return $result;
+    }
+
+    /**
+     * Resets the list, removing all elements and resetting the value type.
+     *
+     * This method effectively empties the list, making it ready to accept new
+     * elements of any type (int or string) as the first element.
+     *
+     * @return self<T> Returns the instance for method chaining.
+     */
+    public function clear(): self
+    {
+        $this->head = null;
+        $this->size = 0;
+        $this->valueType = null;
+
+        return $this;
+    }
 }

@@ -6,7 +6,7 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Assert;
 use Sif\SortedLinkedList\SortedLinkedList;
 
-class SortedLinkedListIterationTest extends TestCase
+class SortedLinkedListTraversalTest extends TestCase
 {
     public function testIterationOnEmptyList(): void
     {
@@ -38,5 +38,26 @@ class SortedLinkedListIterationTest extends TestCase
 
         Assert::assertSame($expectedValues, $actualValues);
         Assert::assertSame($expectedKeys, $actualKeys);
+    }
+
+    public function testToArrayEmpty(): void
+    {
+        $list = new SortedLinkedList();
+        Assert::assertSame([], $list->toArray());
+    }
+
+    public function testToArrayPopulated(): void
+    {
+        $list = new SortedLinkedList();
+        $list->insert(3)->insert(1)->insert(2);
+        Assert::assertSame([1, 2, 3], $list->toArray());
+    }
+
+    public function testToArrayAfterModifications(): void
+    {
+        $list = new SortedLinkedList();
+        $list->insert(1)->insert(2)->insert(3);
+        $list->delete(2);
+        Assert::assertSame([1, 3], $list->toArray());
     }
 }

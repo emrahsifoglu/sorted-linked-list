@@ -93,4 +93,33 @@ class SortedLinkedListTest extends TestCase
 
         Assert::assertSame($list, $result);
     }
+
+    public function testClearRemovesAll(): void
+    {
+        $list = new SortedLinkedList();
+        $list->insert(1)->insert(2)->insert(3);
+        $list->clear();
+
+        Assert::assertSame(0, count($list));
+        Assert::assertTrue($list->isEmpty());
+        Assert::assertSame([], $list->toArray());
+    }
+
+    public function testClearResetsType(): void
+    {
+        $list = new SortedLinkedList();
+        $list->insert(1);
+        $list->clear();
+        $list->insert('string');
+
+        Assert::assertSame(1, count($list));
+    }
+
+    public function testClearChaining(): void
+    {
+        $list = new SortedLinkedList();
+        $result = $list->insert(1)->clear();
+
+        Assert::assertSame($list, $result);
+    }
 }
