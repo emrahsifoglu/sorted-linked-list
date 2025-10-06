@@ -53,6 +53,7 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
     public function getIterator(): \Traversable
     {
         $current = $this->head;
+
         while ($current !== null) {
             yield $current->getValue();
             $current = $current->getNext();
@@ -87,7 +88,6 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
         if ($this->head === null) {
             $this->head = $newNode;
             $this->size++;
-
             return $this;
         }
 
@@ -100,11 +100,11 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
             $newNode->setNext($this->head);
             $this->head = $newNode;
             $this->size++;
-
             return $this;
         }
 
         $current = $this->head;
+
         while ($current->getNext() !== null) {
             $nextValue = $current->getNext()->getValue();
             $isGreaterThanOrEqual = $isString
@@ -114,6 +114,7 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
             if ($isGreaterThanOrEqual) {
                 break;
             }
+
             $current = $current->getNext();
         }
 
@@ -212,15 +213,18 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
         }
 
         $isString = $this->valueType === 'string';
-
         $headValue = $this->head->getValue();
-        if (($isString && strcmp((string)$headValue, (string)$value) === 0) || (!$isString && $headValue === $value)) {
+        $isHeadMatched = ($isString && strcmp((string)$headValue, (string)$value) === 0)
+          || (!$isString && $headValue === $value);
+
+        if ($isHeadMatched) {
             $this->head = $this->head->getNext();
             $this->size--;
             return true;
         }
 
         $current = $this->head;
+
         while ($current->getNext() !== null) {
             $nextValue = $current->getNext()->getValue();
             $isNextGreater = $isString
@@ -309,12 +313,8 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
      * and builds the linked list directly by connecting nodes sequentially. This
      * approach is more efficient than using insert() for each element.
      *
-     * Time Complexity:
-     * - Best case: O(n log n) - dominated by the sorting operation
-     * - Average case: O(n log n) - sorting + linear list construction
-     * - Worst case: O(n log n) - sorting is the limiting factor
-     *
-     * Space Complexity: O(n) - creates n nodes for the linked list
+     * Time Complexity: O(n log n) - most of the time is spent sorting the array.
+     * Space Complexity: O(n) - creates n nodes for the linked list.
      *
      * Note: Using insert() for each element would result in O(n²) time complexity,
      * as each insertion requires traversing the list to find the correct position.
@@ -343,8 +343,19 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
             }
         }
 
-        foreach ($values as $value) {
-            $list->insert($value);
+        sort($values, $firstType === 'string' ? SORT_STRING : SORT_NUMERIC);
+
+        $list->valueType = $firstType;
+        $list->head = new Node($values[0]);
+        $list->size = 1;
+
+        $currentNode = $list->head;
+
+        for ($i = 1; $i < count($values); $i++) {
+            $newNode = new Node($values[$i]);
+            $currentNode->setNext($newNode);
+            $currentNode = $newNode;
+            $list->size++;
         }
 
         return $list;
