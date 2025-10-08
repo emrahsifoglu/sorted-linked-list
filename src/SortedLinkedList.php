@@ -91,12 +91,7 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
             return $this;
         }
 
-        $isString = $this->valueType === 'string';
-        $isLessThanOrEqual = $isString
-          ? strcmp((string)$value, (string)$this->head->getValue()) <= 0
-          : $value <= $this->head->getValue();
-
-        if ($isLessThanOrEqual) {
+        if ($this->compare($value, $this->head->getValue()) <= 0) {
             $newNode->setNext($this->head);
             $this->head = $newNode;
             $this->size++;
@@ -107,11 +102,8 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
 
         while ($current->getNext() !== null) {
             $nextValue = $current->getNext()->getValue();
-            $isGreaterThanOrEqual = $isString
-              ? strcmp((string)$nextValue, (string)$value) >= 0
-              : $nextValue >= $value;
 
-            if ($isGreaterThanOrEqual) {
+            if ($this->compare($nextValue, $value) >= 0) {
                 break;
             }
 
@@ -156,7 +148,6 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
             );
         }
 
-        $isString = $this->valueType === 'string';
         $current = $this->head;
 
         while ($current !== null) {
@@ -166,11 +157,7 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
                 return true;
             }
 
-            $isGreater = $isString
-                ? strcmp((string)$currentValue, (string)$value) > 0
-                : $currentValue > $value;
-
-            if ($isGreater) {
+            if ($this->compare($current->getValue(), $value) > 0) {
                 return false;
             }
 
@@ -212,12 +199,7 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
             );
         }
 
-        $isString = $this->valueType === 'string';
-        $headValue = $this->head->getValue();
-        $isHeadMatched = ($isString && strcmp((string)$headValue, (string)$value) === 0)
-          || (!$isString && $headValue === $value);
-
-        if ($isHeadMatched) {
+        if ($this->head->getValue() === $value) {
             $this->head = $this->head->getNext();
             $this->size--;
             return true;
@@ -227,19 +209,12 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
 
         while ($current->getNext() !== null) {
             $nextValue = $current->getNext()->getValue();
-            $isNextGreater = $isString
-                ? strcmp((string)$nextValue, (string)$value) > 0
-                : $nextValue > $value;
 
-            if ($isNextGreater) {
+            if ($this->compare($nextValue, $value) > 0) {
                 return false;
             }
 
-            $isNextEqual = $isString
-                ? strcmp((string)$nextValue, (string)$value) === 0
-                : $nextValue === $value;
-
-            if ($isNextEqual) {
+            if ($nextValue === $value) {
                 $current->setNext($current->getNext()->getNext());
                 $this->size--;
                 return true;
@@ -287,23 +262,11 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
     /**
      * Converts the sorted linked list to a standard PHP array.
      *
-     * This method is **not lazy** and will traverse the entire list to build a new
-     * array in memory. It is useful for using built-in array functions or for
-     * debugging purposes.
-     *
      * @return array<T> A numerically indexed array containing all list elements in sorted order.
      */
     public function toArray(): array
     {
-        $result = [];
-        $current = $this->head;
-
-        while ($current !== null) {
-            $result[] = $current->getValue();
-            $current = $current->getNext();
-        }
-
-        return $result;
+        return [...$this];
     }
 
     /**
@@ -376,5 +339,20 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
         $this->valueType = null;
 
         return $this;
+    }
+
+    /**
+     * Compares two values according to the list's value type.
+     *
+     * @param T $a First value to compare
+     * @param T $b Second value to compare
+     * @return int Negative if a < b, 0 if a == b, positive if a > b
+     */
+    private function compare(int|string $a, int|string $b): int
+    {
+        return match ($this->valueType) {
+            'string' => strcmp((string)$a, (string)$b),
+            default => $a <=> $b,
+        };
     }
 }
