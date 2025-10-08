@@ -298,6 +298,12 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
             return $list;
         }
 
+        if (!array_is_list($values)) {
+            throw new InvalidArgumentException(
+                'Associative arrays are not allowed'
+            );
+        }
+
         $firstType = get_debug_type($values[array_key_first($values)]);
 
         foreach ($values as $value) {
