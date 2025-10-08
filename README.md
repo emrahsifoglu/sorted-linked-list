@@ -3,6 +3,19 @@
 This is a library that provides SortedLinkedList. 
 It should be able to hold string or int values, but not both.
 
+**Time and Space Complexity Analysis**
+
+| Method | Time (Best) | Time (Average) | Time (Worst) | Space | Status |
+|--------|-------------|----------------|--------------|-------|--------|
+| `search()` | O(1) | O(n) | O(n) | O(1) | ✅ Correct |
+| `delete()` | O(1) | O(n) | O(n) | O(1) | ✅ Correct |
+| `fromArray()` | O(n log n) | O(n log n) | O(n log n) | O(n) | ✅ Correct |
+| `filter()` | O(n log n) | O(n log n) | O(n log n) | O(n) | ✅ Correct |
+| `reduce()` | O(n) | O(n) | O(n) | O(1) | ✅ Correct |
+| `map()` | O(n log n) | O(n log n) | O(n log n) | O(n) | ✅ Correct |
+
+---
+
 ## Table of Contents
 
 * [Prerequisites](#prerequisites)
@@ -11,6 +24,12 @@ It should be able to hold string or int values, but not both.
   * [Run Tests](#run-tests)
   * [Code Quality Checks](#code-quality-checks)
 * [Usage](#usage)
+  * [Insert Items](#insert-items)
+  * [Search for an Item](#search-for-an-item)
+  * [Delete an Item](#delete-an-item)
+  * [Filter Items](#filter-items)
+  * [Map Items](#map-items)
+  * [Reduce List to a Single Value](#reduce-list-to-a-single-value)
 * [Resources](#resources)  
 * [License](#license)
 
@@ -62,9 +81,15 @@ docker compose run --rm php composer qa
 
 ## Usage
 
-Here are some examples of how to use the `SortedLinkedList` class:
+Here are some examples of how to use the `SortedLinkedList` class.
 
-##### Insert Elements
+```bash
+docker compose run --rm php /usr/local/bin/php /app/usage_examples.php
+```
+
+##### Insert Items
+
+Items must be the same type.
 
 ```php
 <?php
@@ -73,17 +98,17 @@ use Sif\SortedLinkedList\SortedLinkedList;
 
 $list = new SortedLinkedList();
 
-// Inserting integers
+// Inserting integers: 1, 3, 5, 8
 $list->insert(5)->insert(3)->insert(8)->insert(1);
-// The list now contains: 1, 3, 5, 8
 
-// Inserting strings (must be of the same type)
 $stringList = new SortedLinkedList();
+
+// Inserting strings: A, B, C
 $stringList->insert('C')->insert('A')->insert('B');
-// The list now contains: A, B, C
+
 ```
 
-##### Search for an Element
+##### Search for an Item
 
 ```php
 <?php
@@ -100,7 +125,7 @@ $found = $list->search(5); // true
 $notFound = $list->search(4); // false
 ```
 
-##### Delete an Element
+##### Delete an Item
 
 ```php
 <?php
@@ -111,8 +136,8 @@ $list = new SortedLinkedList();
 $list->insert(1)->insert(3)->insert(5)->insert(8);
 
 // Delete an existing value
-$deleted = $list->delete(5); // true
 // The list is now: 1, 3, 8
+$deleted = $list->delete(5); // true
 
 // Delete a non-existing value
 $notDeleted = $list->delete(4); // false
@@ -125,13 +150,74 @@ $notDeleted = $list->delete(4); // false
 
 use Sif\SortedLinkedList\SortedLinkedList;
 
-// Create a list from an array
 $arr = [5, 2, 9, 1];
-$list = SortedLinkedList::fromArray($arr);
+
 // The list is now: 1, 2, 5, 9
+$list = SortedLinkedList::fromArray($arr);
 
 // Convert the list back to an array
 $newArr = $list->toArray(); // [1, 2, 5, 9]
+```
+
+##### Filter Items
+
+```php
+<?php
+
+use Sif\SortedLinkedList\SortedLinkedList;
+
+// The list is sorted as: 1, 3, 5, 7, 8
+$list = SortedLinkedList::fromArray([5, 1, 8, 3, 7]);
+
+// Filter out numbers greater than 5
+$filteredList = $list->filter(fn(int $item): bool => $item <= 5);
+
+echo implode(', ', $filteredList->toArray()); // [1, 3, 5]
+
+// The list is sorted as: apple, banana, date, kiwi
+$stringList = SortedLinkedList::fromArray(['apple', 'banana', 'kiwi', 'date']);
+
+// Filter out strings longer than 4 characters
+$longStringsList = $stringList->filter(fn(string $item): bool => strlen($item) > 4);
+
+echo implode(', ', $longStringsList->toArray()); // [apple, banana]
+```
+
+##### Map Items
+
+```php
+<?php
+
+use Sif\SortedLinkedList\SortedLinkedList;
+
+$list = SortedLinkedList::fromArray([5, 1, 8, 3]);
+
+// Double each value in the list
+$mappedList = $list->map(fn(int $item): int => $item * 2);
+
+// The new list remains sorted: 2, 6, 10, 16 
+echo implode(', ', $mappedList->toArray());
+```
+
+##### Reduce List to a Single Value
+
+```php
+<?php
+
+use Sif\SortedLinkedList\SortedLinkedList;
+
+$list = SortedLinkedList::fromArray([1, 3, 5, 8]);
+
+// Sum all elements in the list
+$sum = $list->reduce(fn(int $carry, int $item): int => $carry + $item, 0); 
+
+echo $sum;// 17
+
+// Find the maximum value (without initial value)
+$max = $list->reduce(fn(int $carry, int $item): int => max($carry, $item));
+
+echo $max; // 8
+
 ```
 
 ---

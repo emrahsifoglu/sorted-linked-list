@@ -94,7 +94,7 @@ class SortedLinkedListTraversalTest extends TestCase
 
     public function testFromArrayMixedTypes(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Mixed types in array');
 
         SortedLinkedList::fromArray([1, 'string', 3]);
@@ -145,5 +145,13 @@ class SortedLinkedListTraversalTest extends TestCase
 
         Assert::assertSame(count($data), count($list));
         Assert::assertSame($expected, $list->toArray());
+    }
+
+    public function testFromArrayAssociativeArray(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Associative arrays are not allowed');
+
+        $list = SortedLinkedList::fromArray(['fruit' => 'apple']);
     }
 }

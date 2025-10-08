@@ -91,12 +91,7 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
             return $this;
         }
 
-        $isString = $this->valueType === 'string';
-        $isLessThanOrEqual = $isString
-          ? strcmp((string)$value, (string)$this->head->getValue()) <= 0
-          : $value <= $this->head->getValue();
-
-        if ($isLessThanOrEqual) {
+        if ($this->compare($value, $this->head->getValue()) <= 0) {
             $newNode->setNext($this->head);
             $this->head = $newNode;
             $this->size++;
@@ -107,11 +102,8 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
 
         while ($current->getNext() !== null) {
             $nextValue = $current->getNext()->getValue();
-            $isGreaterThanOrEqual = $isString
-              ? strcmp((string)$nextValue, (string)$value) >= 0
-              : $nextValue >= $value;
 
-            if ($isGreaterThanOrEqual) {
+            if ($this->compare($nextValue, $value) >= 0) {
                 break;
             }
 
@@ -156,7 +148,6 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
             );
         }
 
-        $isString = $this->valueType === 'string';
         $current = $this->head;
 
         while ($current !== null) {
@@ -166,11 +157,7 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
                 return true;
             }
 
-            $isGreater = $isString
-                ? strcmp((string)$currentValue, (string)$value) > 0
-                : $currentValue > $value;
-
-            if ($isGreater) {
+            if ($this->compare($current->getValue(), $value) > 0) {
                 return false;
             }
 
@@ -212,12 +199,7 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
             );
         }
 
-        $isString = $this->valueType === 'string';
-        $headValue = $this->head->getValue();
-        $isHeadMatched = ($isString && strcmp((string)$headValue, (string)$value) === 0)
-          || (!$isString && $headValue === $value);
-
-        if ($isHeadMatched) {
+        if ($this->head->getValue() === $value) {
             $this->head = $this->head->getNext();
             $this->size--;
             return true;
@@ -227,19 +209,12 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
 
         while ($current->getNext() !== null) {
             $nextValue = $current->getNext()->getValue();
-            $isNextGreater = $isString
-                ? strcmp((string)$nextValue, (string)$value) > 0
-                : $nextValue > $value;
 
-            if ($isNextGreater) {
+            if ($this->compare($nextValue, $value) > 0) {
                 return false;
             }
 
-            $isNextEqual = $isString
-                ? strcmp((string)$nextValue, (string)$value) === 0
-                : $nextValue === $value;
-
-            if ($isNextEqual) {
+            if ($nextValue === $value) {
                 $current->setNext($current->getNext()->getNext());
                 $this->size--;
                 return true;
@@ -287,37 +262,28 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
     /**
      * Converts the sorted linked list to a standard PHP array.
      *
-     * This method is **not lazy** and will traverse the entire list to build a new
-     * array in memory. It is useful for using built-in array functions or for
-     * debugging purposes.
-     *
      * @return array<T> A numerically indexed array containing all list elements in sorted order.
      */
     public function toArray(): array
     {
-        $result = [];
-        $current = $this->head;
-
-        while ($current !== null) {
-            $result[] = $current->getValue();
-            $current = $current->getNext();
-        }
-
-        return $result;
+        return [...$this];
     }
 
     /**
      * Creates a new SortedLinkedList instance from a given array.
      *
      * This static factory method validates type consistency, sorts the input array,
-     * and builds the linked list directly by connecting nodes sequentially. This
-     * approach is more efficient than using insert() for each element.
+     * and builds the linked list directly by connecting nodes sequentially.
      *
-     * Time Complexity: O(n log n) - most of the time is spent sorting the array.
+     * Note: This is more efficient than using insert() for each element,
+     * as the overall complexity is dominated by the initial sort.
+     *
+     * Time Complexity:
+     * - Best case: O(n log n) - dominated by the array sort.
+     * - Average case: O(n log n) - dominated by the array sort.
+     * - Worst case: O(n log n) - dominated by the array sort.
+     *
      * Space Complexity: O(n) - creates n nodes for the linked list.
-     *
-     * Note: Using insert() for each element would result in O(n²) time complexity,
-     * as each insertion requires traversing the list to find the correct position.
      *
      * @param array<T> $values The array of values to populate the list with.
      * @return self<T> A new SortedLinkedList instance.
@@ -330,6 +296,12 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
 
         if (count($values) === 0) {
             return $list;
+        }
+
+        if (!array_is_list($values)) {
+            throw new InvalidArgumentException(
+                'Associative arrays are not allowed'
+            );
         }
 
         $firstType = get_debug_type($values[array_key_first($values)]);
@@ -362,6 +334,106 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
     }
 
     /**
+     * Filters elements based on a predicate and returns a new SortedLinkedList.
+     *
+     * Only elements for which the callable returns true are included in the result list.
+     *
+     * Time Complexity:
+     * - Best case: O(n log n) - dominated by the `fromArray` call, due to sorting.
+     * - Average case: O(n log n) - filtering is O(n), sorting is O(n log n).
+     * - Worst case: O(n log n) - sorting is the bottleneck.
+     *
+     * Space Complexity: O(n) - creates a filtered array and new list instance.
+     *
+     * Note: The resulting list will be sorted.
+     *
+     * @param callable(T): bool $callback The predicate function returning true to keep element.
+     * @return self<T> A new SortedLinkedList containing only filtered elements.
+     * @throws InvalidArgumentException If the filtered list results in mixed types (should not occur).
+     */
+    public function filter(callable $callback): self
+    {
+        $filteredValues = [];
+
+        foreach ($this as $value) {
+            if ($callback($value)) {
+                $filteredValues[] = $value;
+            }
+        }
+
+        return self::fromArray($filteredValues);
+    }
+
+    /**
+     * Iteratively reduces the list to a single value using a callback function.
+     *
+     * The callback receives the accumulated value and the current list element.
+     *
+     * Time Complexity:
+     * - Best case: O(n) - linearly iterates through all n elements.
+     * - Average case: O(n) - linearly iterates through all n elements.
+     * - Worst case: O(n) - linearly iterates through all n elements.
+     *
+     * Space Complexity: O(1) - uses constant extra space.
+     *
+     * @param callable(mixed $carry, T $item): mixed $callback The reduction function.
+     * @param mixed $initial The initial value for the accumulator.
+     * @return mixed The final accumulated value.
+     */
+    public function reduce(callable $callback, mixed $initial = null): mixed
+    {
+        $hasInitial = func_num_args() >= 2;
+
+        /** @var \Iterator<int, T> $iterator */
+        $iterator = $this->getIterator();
+
+        if (!$iterator->valid()) {
+            return $hasInitial ? $initial : null;
+        }
+
+        $carry = $hasInitial ? $initial : $iterator->current();
+
+        if (!$hasInitial) {
+            $iterator->next();
+        }
+
+        for (; $iterator->valid(); $iterator->next()) {
+            $carry = $callback($carry, $iterator->current());
+        }
+
+        return $carry;
+    }
+
+    /**
+     * Applies a callback to all elements and returns a new SortedLinkedList.
+     *
+     * Creates a new list where each element is the result of applying the
+     * callback function to the corresponding original element. The new list is
+     * built and then sorted.
+     *
+     * Time Complexity:
+     * - Best case: O(n log n) - dominated by the `fromArray` call, due to sorting.
+     * - Average case: O(n log n) - mapping is O(n), sorting is O(n log n).
+     * - Worst case: O(n log n) - sorting is the bottleneck.
+     *
+     * Space Complexity: O(n) - creates an intermediate array to hold mapped values
+     * and a new list instance with n nodes.
+     *
+     * @return self<T> A new SortedLinkedList instance containing the mapped elements in sorted order.
+     * @throws InvalidArgumentException If the mapped list results in mixed types.
+     */
+    public function map(callable $callback): self
+    {
+        $mappedValues = [];
+
+        foreach ($this as $value) {
+            $mappedValues[] = $callback($value);
+        }
+
+        return self::fromArray($mappedValues);
+    }
+
+    /**
      * Resets the list, removing all elements and resetting the value type.
      *
      * This method effectively empties the list, making it ready to accept new
@@ -376,5 +448,20 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
         $this->valueType = null;
 
         return $this;
+    }
+
+    /**
+     * Compares two values according to the list's value type.
+     *
+     * @param T $a First value to compare
+     * @param T $b Second value to compare
+     * @return int Negative if a < b, 0 if a == b, positive if a > b
+     */
+    private function compare(int|string $a, int|string $b): int
+    {
+        return match ($this->valueType) {
+            'string' => strcmp((string)$a, (string)$b),
+            default => $a <=> $b,
+        };
     }
 }
