@@ -273,14 +273,17 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
      * Creates a new SortedLinkedList instance from a given array.
      *
      * This static factory method validates type consistency, sorts the input array,
-     * and builds the linked list directly by connecting nodes sequentially. This
-     * approach is more efficient than using insert() for each element.
+     * and builds the linked list directly by connecting nodes sequentially.
      *
-     * Time Complexity: O(n log n) - most of the time is spent sorting the array.
+     * Note: This is more efficient than using insert() for each element,
+     * as the overall complexity is dominated by the initial sort.
+     *
+     * Time Complexity:
+     * - Best case: O(n log n) - dominated by the array sort.
+     * - Average case: O(n log n) - dominated by the array sort.
+     * - Worst case: O(n log n) - dominated by the array sort.
+     *
      * Space Complexity: O(n) - creates n nodes for the linked list.
-     *
-     * Note: Using insert() for each element would result in O(n²) time complexity,
-     * as each insertion requires traversing the list to find the correct position.
      *
      * @param array<T> $values The array of values to populate the list with.
      * @return self<T> A new SortedLinkedList instance.
@@ -322,6 +325,106 @@ class SortedLinkedList implements \Countable, \IteratorAggregate
         }
 
         return $list;
+    }
+
+    /**
+     * Filters elements based on a predicate and returns a new SortedLinkedList.
+     *
+     * Only elements for which the callable returns true are included in the result list.
+     *
+     * Time Complexity:
+     * - Best case: O(n log n) - dominated by the `fromArray` call, due to sorting.
+     * - Average case: O(n log n) - filtering is O(n), sorting is O(n log n).
+     * - Worst case: O(n log n) - sorting is the bottleneck.
+     *
+     * Space Complexity: O(n) - creates a filtered array and new list instance.
+     *
+     * Note: The resulting list will be sorted.
+     *
+     * @param callable(T): bool $callback The predicate function returning true to keep element.
+     * @return self<T> A new SortedLinkedList containing only filtered elements.
+     * @throws InvalidArgumentException If the filtered list results in mixed types (should not occur).
+     */
+    public function filter(callable $callback): self
+    {
+        $filteredValues = [];
+
+        foreach ($this as $value) {
+            if ($callback($value)) {
+                $filteredValues[] = $value;
+            }
+        }
+
+        return self::fromArray($filteredValues);
+    }
+
+    /**
+     * Iteratively reduces the list to a single value using a callback function.
+     *
+     * The callback receives the accumulated value and the current list element.
+     *
+     * Time Complexity:
+     * - Best case: O(n) - linearly iterates through all n elements.
+     * - Average case: O(n) - linearly iterates through all n elements.
+     * - Worst case: O(n) - linearly iterates through all n elements.
+     *
+     * Space Complexity: O(1) - uses constant extra space.
+     *
+     * @param callable(mixed $carry, T $item): mixed $callback The reduction function.
+     * @param mixed $initial The initial value for the accumulator.
+     * @return mixed The final accumulated value.
+     */
+    public function reduce(callable $callback, mixed $initial = null): mixed
+    {
+        $hasInitial = func_num_args() >= 2;
+
+        /** @var \Iterator<int, T> $iterator */
+        $iterator = $this->getIterator();
+
+        if (!$iterator->valid()) {
+            return $hasInitial ? $initial : null;
+        }
+
+        $carry = $hasInitial ? $initial : $iterator->current();
+
+        if (!$hasInitial) {
+            $iterator->next();
+        }
+
+        for (; $iterator->valid(); $iterator->next()) {
+            $carry = $callback($carry, $iterator->current());
+        }
+
+        return $carry;
+    }
+
+    /**
+     * Applies a callback to all elements and returns a new SortedLinkedList.
+     *
+     * Creates a new list where each element is the result of applying the
+     * callback function to the corresponding original element. The new list is
+     * built and then sorted.
+     *
+     * Time Complexity:
+     * - Best case: O(n log n) - dominated by the `fromArray` call, due to sorting.
+     * - Average case: O(n log n) - mapping is O(n), sorting is O(n log n).
+     * - Worst case: O(n log n) - sorting is the bottleneck.
+     *
+     * Space Complexity: O(n) - creates an intermediate array to hold mapped values
+     * and a new list instance with n nodes.
+     *
+     * @return self<T> A new SortedLinkedList instance containing the mapped elements in sorted order.
+     * @throws InvalidArgumentException If the mapped list results in mixed types.
+     */
+    public function map(callable $callback): self
+    {
+        $mappedValues = [];
+
+        foreach ($this as $value) {
+            $mappedValues[] = $callback($value);
+        }
+
+        return self::fromArray($mappedValues);
     }
 
     /**
