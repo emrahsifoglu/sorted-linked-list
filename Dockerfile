@@ -24,7 +24,6 @@ ENV COMPOSER_ALLOW_SUPERUSER=1 \
     COMPOSER_HOME=/tmp/composer \
     PATH="/app/vendor/bin:${PATH}"
 
-
 RUN mkdir -p /tmp/composer && chmod 777 /tmp/composer
 
 CMD ["php", "-v"]

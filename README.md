@@ -84,7 +84,7 @@ docker compose run --rm php composer qa
 Here are some examples of how to use the `SortedLinkedList` class.
 
 ```bash
-docker compose run --rm php /usr/local/bin/php /app/usage_examples.php
+docker compose run --rm php /usr/local/bin/php ./app/usage_examples.php
 ```
 
 ##### Insert Items
@@ -93,6 +93,8 @@ Items must be the same type.
 
 ```php
 <?php
+
+require __DIR__ . '/../vendor/autoload.php';
 
 use Sif\SortedLinkedList\SortedLinkedList;
 
@@ -112,6 +114,8 @@ $stringList->insert('C')->insert('A')->insert('B');
 
 ```php
 <?php
+
+require __DIR__ . '/../vendor/autoload.php';
 
 use Sif\SortedLinkedList\SortedLinkedList;
 
@@ -148,6 +152,8 @@ $notDeleted = $list->delete(4); // false
 ```php
 <?php
 
+require __DIR__ . '/../vendor/autoload.php';
+
 use Sif\SortedLinkedList\SortedLinkedList;
 
 $arr = [5, 2, 9, 1];
@@ -163,6 +169,8 @@ $newArr = $list->toArray(); // [1, 2, 5, 9]
 
 ```php
 <?php
+
+require __DIR__ . '/../vendor/autoload.php';
 
 use Sif\SortedLinkedList\SortedLinkedList;
 
@@ -188,6 +196,8 @@ echo implode(', ', $longStringsList->toArray()); // [apple, banana]
 ```php
 <?php
 
+require __DIR__ . '/../vendor/autoload.php';
+
 use Sif\SortedLinkedList\SortedLinkedList;
 
 $list = SortedLinkedList::fromArray([5, 1, 8, 3]);
@@ -203,6 +213,8 @@ echo implode(', ', $mappedList->toArray());
 
 ```php
 <?php
+
+require __DIR__ . '/../vendor/autoload.php';
 
 use Sif\SortedLinkedList\SortedLinkedList;
 
